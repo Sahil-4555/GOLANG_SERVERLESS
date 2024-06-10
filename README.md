@@ -58,6 +58,10 @@ This is a Todo application where the backend is written in Golang, using AWS Lam
     ```
     cdk deploy
     ```
+#### Architecture
+
+![AWS Architecture](./AWS Architecture.png)
+
 
 ### 🏗️ Project Structure
 
