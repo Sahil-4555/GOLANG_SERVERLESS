@@ -60,7 +60,7 @@ This is a Todo application where the backend is written in Golang, using AWS Lam
     ```
 #### Architecture
 
-![AWS Architecture](./AWS Architecture.png)
+![AWS Architecture](./AWS_Architecture.png)
 
 
 ### 🏗️ Project Structure
