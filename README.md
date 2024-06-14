@@ -58,11 +58,14 @@ This is a Todo application where the backend is written in Golang, using AWS Lam
     ```
     cdk deploy
     ```
+#### Architecture
 
-### 🏗️ Project Structure
+![AWS Architecture](./AWS_Architecture.jpg)
+
+
+### 🏗️ Project Structure    
 
 - `cdk/`: Contains the AWS CDK infrastructure code.
-- `lambda/`: Contains the Lambda function code.
 
 ### 📂 File Structure
 
@@ -91,7 +94,6 @@ This is a Todo application where the backend is written in Golang, using AWS Lam
 │   └── main.go
 ├── sign-up
 │   └── main.go
-├── tree_structure.txt
 ├── update-task
 │   └── main.go
 └── utils
