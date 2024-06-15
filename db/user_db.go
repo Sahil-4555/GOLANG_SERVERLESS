@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"serverless-todo-golang/utils/constants"
+	"serverless-todo-golang/utils/logger"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -42,6 +43,8 @@ func init() {
 }
 
 func CheckIfUserWithThisEmailExists(email string) (bool, error) {
+	logger.GetLog().Info("INFO : ", "CheckIfUserWithThisEmailExists Called..")
+
 	input := &dynamodb.ScanInput{
 		TableName:        aws.String(userTableName),
 		FilterExpression: aws.String("#email = :email"),
@@ -55,21 +58,21 @@ func CheckIfUserWithThisEmailExists(email string) (bool, error) {
 
 	result, err := userClient.Scan(context.Background(), input)
 	if err != nil {
-		fmt.Println("CheckIfUserWithThisEmailExists Error: ", err)
+		logger.GetLog().Error("ERROR : ", "Error in scanning the user table.")
 		return false, err
 	}
-	fmt.Println("CheckIfUserWithThisEmailExists: ------>", result.Items)
+
 	return len(result.Items) > 0, nil
 }
 
 func InsertUser(user User) error {
+	logger.GetLog().Info("INFO : ", "Inserting User Called..")
+
 	item, err := attributevalue.MarshalMap(user)
 	if err != nil {
-		fmt.Println("InsertUser: ", err)
+		logger.GetLog().Error("ERROR : ", "Error in marshalling the user.")
 		return err
 	}
-
-	fmt.Println("InsertUser: ------>", item)
 
 	_, err = userClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(userTableName),
@@ -77,7 +80,7 @@ func InsertUser(user User) error {
 	})
 
 	if err != nil {
-		fmt.Println("InsertUser Error: ", err)
+		logger.GetLog().Error("ERROR : ", fmt.Sprintf("Error in inserting the user: %v", err.Error()))
 		return err
 	}
 
@@ -85,6 +88,7 @@ func InsertUser(user User) error {
 }
 
 func FindTheUserWithEmail(email string) (User, error) {
+	logger.GetLog().Info("INFO : ", "FindTheUserWithEmail Called..")
 
 	var user User
 	input := &dynamodb.ScanInput{
@@ -97,11 +101,12 @@ func FindTheUserWithEmail(email string) (User, error) {
 
 	result, err := userClient.Scan(context.Background(), input)
 	if err != nil {
-		fmt.Println("FindTheUserWithEmail Error: ", err)
+		logger.GetLog().Error("ERROR : ", "Error in scanning the user table.")
 		return user, err
 	}
 
 	if len(result.Items) == 0 {
+		logger.GetLog().Error("ERROR : ", "User not found.")
 		return user, errors.New("user not found")
 	}
 
@@ -109,28 +114,31 @@ func FindTheUserWithEmail(email string) (User, error) {
 
 	passwordAV, ok := item[constants.PASSWORD]
 	if !ok {
+		logger.GetLog().Error("ERROR : ", "password attribute not found")
 		return user, errors.New("password attribute not found")
 	}
 	user.Password = passwordAV.(*types.AttributeValueMemberS).Value
 
 	nameAV, ok := item[constants.USER_NAME]
 	if !ok {
+		logger.GetLog().Error("ERROR : ", "name attribute not found")
 		return user, errors.New("name attribute not found")
 	}
 	user.Name = nameAV.(*types.AttributeValueMemberS).Value
 
 	emailAV, ok := item[constants.EMAIL]
 	if !ok {
+		logger.GetLog().Error("ERROR : ", "email attribute not found")
 		return user, errors.New("email attribute not found")
 	}
 	user.Email = emailAV.(*types.AttributeValueMemberS).Value
 
 	idAV, ok := item[constants.USER_ID]
 	if !ok {
+		logger.GetLog().Error("ERROR : ", "ID attribute not found")
 		return user, errors.New("ID attribute not found")
 	}
 	user.ID = idAV.(*types.AttributeValueMemberS).Value
 
-	fmt.Println("FindTheUserWithEmail: ------>", user)
 	return user, nil
 }

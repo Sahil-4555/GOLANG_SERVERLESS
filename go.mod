@@ -3,6 +3,7 @@ module serverless-todo-golang
 go 1.22.3
 
 require (
+	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/aws/aws-lambda-go v1.47.0
 	github.com/aws/aws-sdk-go-v2 v1.27.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.16
@@ -11,6 +12,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.32.6
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
+	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
+	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
+	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/crypto v0.23.0
 )
 
@@ -29,4 +33,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.28.10 // indirect
 	github.com/aws/smithy-go v1.20.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/jonboulle/clockwork v0.4.0 // indirect
+	github.com/lestrrat-go/strftime v1.0.6 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	golang.org/x/sys v0.20.0 // indirect
 )
