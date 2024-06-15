@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import * as constants from "../utils/constant/Constant";
+import * as constants from '../utils/constant/Constant'
 
 export default function Login() {
     const navigate = useNavigate();
@@ -41,14 +41,12 @@ export default function Login() {
         if (validateForm()) {
             const { email, password } = values;
             try {
-                const { data } = await axios.post(`${process.env.URL}/signIn`, { email, password });
-                console.log("----------->", data)
+                const { data } = await axios.post(constants.ROUTES.LOGIN, { email, password });
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("userId", data.data.id);
                 localStorage.setItem("name", data.data.name)
                 navigate("/"); // Reload the page to trigger WebSocketProvider initialization
             } catch (error) {
-                // console.log("----------->", data)
                 console.error("Login Failed: ", error);
                 toast.error(error, toastOptions);
             }

@@ -31,6 +31,18 @@ const TodoReducer = (state = initalState.Todo, action) => {
         case types.DELETE_TODO:
             return state.filter((todo) => todo.id !== action.payload.id)
 
+        case types.SET_LOADING:
+            return {
+                ...state,
+                loading: true,
+            };
+            
+        case types.UNSET_LOADING:
+            return {
+                ...state,
+                loading: false,
+            };
+
         default:
             return state;
     }

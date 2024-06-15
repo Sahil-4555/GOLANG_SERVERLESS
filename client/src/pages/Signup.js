@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import * as constants from "../utils/constant/Constant";
+import * as constants from '../utils/constant/Constant'
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -59,12 +59,8 @@ export default function Signup() {
         await new Promise((resolve) => {
           startTransition(() => {
             axios
-              .post(`${process.env.URL}/signUp`, { name, email, password })
+              .post(constants.ROUTES.SIGNUP, { name, email, password })
               .then(({ data }) => {
-                console.log("--------------->", data)
-                // if (data.code === constants.API_STATUS.FAILURE_CODE) {
-                //   toast.error(data.message, toastOptions);
-                // } else {
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("userId", data.data.id);
                 localStorage.setItem("name", data.data.name)
