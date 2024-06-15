@@ -1,6 +1,7 @@
 package crypto
 
 import (
+	"serverless-todo-golang/utils/logger"
 	"serverless-todo-golang/utils/middleware"
 	"time"
 )
@@ -18,6 +19,7 @@ func GenerateAuthToken(tokenData UserTokenData) (string, error) {
 	tokenData.TimeStamp()
 	token, err := middleware.GenerateToken(&tokenData)
 	if err != nil {
+		logger.GetLog().Error("ERROR : ", err.Error())
 		return "", err
 	}
 	return token, nil

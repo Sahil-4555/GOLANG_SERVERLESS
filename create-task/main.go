@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"serverless-todo-golang/db"
+	"serverless-todo-golang/utils/logger"
 	"serverless-todo-golang/utils/middleware"
 	"time"
 
@@ -19,9 +20,11 @@ func main() {
 }
 
 func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	logger.GetLog().Info("INFO : ", "Create Task Handler Called..")
 
 	customCtx, err := middleware.AuthHandler(ctx, &request)
 	if err != nil {
+		logger.GetLog().Error("ERROR : ", "Unauthorized Access.")
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: http.StatusUnauthorized,
 			Body:       "Unauthorized.",
@@ -33,7 +36,7 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 	req.UserId = customCtxValue.UserID
 
 	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
-		fmt.Println("Error in unmarshalling the request body: ", err)
+		logger.GetLog().Error("ERROR : ", "Error in unmarshalling the request body.")
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: http.StatusBadRequest,
 			Body:       err.Error(),
@@ -48,7 +51,7 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 
 	err = db.InsertTask(req)
 	if err != nil {
-		fmt.Println("Error in inserting the task: --->", err)
+		logger.GetLog().Error("ERROR : ", fmt.Sprintf("Error in creating task: %v", err.Error()))
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: http.StatusBadRequest,
 			Body:       err.Error(),
@@ -57,13 +60,14 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 
 	responseBody, err := json.Marshal(req)
 	if err != nil {
-		fmt.Println("Error in marshalling the response body: --->", err)
+		logger.GetLog().Error("ERROR : ", fmt.Sprintf("Error in marshalling the response: %v", err.Error()))
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: http.StatusInternalServerError,
-			Body:       "Internal server error ----->",
+			Body:       "Internal server error",
 		}, nil
 	}
 
+	logger.GetLog().Info("INFO : ", "Task Created Successfully.")
 	return events.APIGatewayV2HTTPResponse{
 			StatusCode: http.StatusCreated,
 			Body:       string(responseBody)},

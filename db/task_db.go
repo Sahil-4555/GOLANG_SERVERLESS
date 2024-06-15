@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"serverless-todo-golang/utils/constants"
+	"serverless-todo-golang/utils/logger"
 	"sort"
 	"strings"
 	"time"
@@ -46,13 +47,13 @@ func init() {
 }
 
 func InsertTask(task Task) error {
+	logger.GetLog().Info("INFO : ", "Inserting Task Called..")
+
 	item, err := attributevalue.MarshalMap(task)
 	if err != nil {
-		fmt.Println("InsertTask: ", err)
+		logger.GetLog().Error("ERROR : ", "Error in marshalling the task.")
 		return err
 	}
-
-	fmt.Println("InsertTask: ------>", item)
 
 	_, err = todoClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(todoTableName),
@@ -60,7 +61,7 @@ func InsertTask(task Task) error {
 	})
 
 	if err != nil {
-		fmt.Println("InsertTask Error: ", err)
+		logger.GetLog().Error("ERROR : ", fmt.Sprintf("Error in inserting the task: %v", err.Error()))
 		return err
 	}
 
@@ -68,10 +69,12 @@ func InsertTask(task Task) error {
 }
 
 func UpdateTaskById(task Task, taskId string) error {
+	logger.GetLog().Info("INFO : ", "Update Task Called..")
 
 	update := expression.Set(expression.Name(constants.TASK_NAME), expression.Value(task.Name))
 	updateExpression, err := expression.NewBuilder().WithUpdate(update).Build()
 	if err != nil {
+		logger.GetLog().Error("ERROR : ", "Error in building the update expression.")
 		return err
 	}
 
@@ -85,6 +88,7 @@ func UpdateTaskById(task Task, taskId string) error {
 		ExpressionAttributeValues: updateExpression.Values(),
 	})
 	if err != nil {
+		logger.GetLog().Error("ERROR : ", fmt.Sprintf("Error in updating the task: %v", err.Error()))
 		return fmt.Errorf("failed to update task name: %v", err)
 	}
 
@@ -92,10 +96,12 @@ func UpdateTaskById(task Task, taskId string) error {
 }
 
 func UpdateTaskToCompletedById(task Task, taskId string) error {
+	logger.GetLog().Info("INFO : ", "Update Task to Completed Called..")
 
 	update := expression.Set(expression.Name(constants.COMPLETED), expression.Value(task.Completed))
 	updateExpression, err := expression.NewBuilder().WithUpdate(update).Build()
 	if err != nil {
+		logger.GetLog().Error("ERROR : ", "Error in building the update expression.")
 		return err
 	}
 
@@ -109,6 +115,7 @@ func UpdateTaskToCompletedById(task Task, taskId string) error {
 		ExpressionAttributeValues: updateExpression.Values(),
 	})
 	if err != nil {
+		logger.GetLog().Error("ERROR : ", fmt.Sprintf("Error in updating the task: %v", err.Error()))
 		return fmt.Errorf("failed to update task to completed: %v", err)
 	}
 
@@ -116,12 +123,13 @@ func UpdateTaskToCompletedById(task Task, taskId string) error {
 }
 
 func GetAllTasksWIthUserId(userId string) ([]Task, error) {
+	logger.GetLog().Info("INFO : ", "Get All Tasks Called..")
 
 	var tasks []Task
-
 	filter := expression.Name("user_id").Equal(expression.Value(userId))
 	expr, err := expression.NewBuilder().WithFilter(filter).Build()
 	if err != nil {
+		logger.GetLog().Error("ERROR : ", "Error in building the expression.")
 		return nil, fmt.Errorf("failed to build expression: %v", err)
 	}
 
@@ -132,12 +140,14 @@ func GetAllTasksWIthUserId(userId string) ([]Task, error) {
 		ExpressionAttributeValues: expr.Values(),
 	})
 	if err != nil {
+		logger.GetLog().Error("ERROR : ", fmt.Sprintf("Error in querying the tasks: %v", err.Error()))
 		return nil, fmt.Errorf("failed to query tasks: %v", err)
 	}
 
 	for _, item := range result.Items {
 		var task Task
 		if err := attributevalue.UnmarshalMap(item, &task); err != nil {
+			logger.GetLog().Error("ERROR : ", "Error in unmarshalling the task.")
 			return nil, fmt.Errorf("failed to unmarshal task: %v", err)
 		}
 		tasks = append(tasks, task)
@@ -152,17 +162,23 @@ func GetAllTasksWIthUserId(userId string) ([]Task, error) {
 }
 
 func DeleteTaskById(taskId string) error {
+	logger.GetLog().Info("INFO : ", "Delete Task Called..")
+
 	_, err := todoClient.DeleteItem(context.Background(), &dynamodb.DeleteItemInput{
 		TableName: aws.String(todoTableName),
 		Key: map[string]types.AttributeValue{
 			constants.TASK_ID: &types.AttributeValueMemberS{Value: taskId},
 		},
 	})
+
 	if err != nil {
 		if strings.Contains(err.Error(), "ConditionalCheckFailedException") {
+			logger.GetLog().Error("ERROR : ", fmt.Sprintf("task with ID %s not found", taskId))
 			return fmt.Errorf("task with ID %s not found", taskId)
 		}
+		logger.GetLog().Error("ERROR : ", fmt.Sprintf("Error in deleting the task: %v", err.Error()))
 		return fmt.Errorf("failed to delete task: %v", err)
 	}
+
 	return nil
 }

@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"regexp"
 	"serverless-todo-golang/db"
 	"serverless-todo-golang/utils/crypto"
+	"serverless-todo-golang/utils/logger"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -22,19 +22,20 @@ func main() {
 }
 
 func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	logger.GetLog().Info("INFO : ", "Sign Up Handler Called..")
+
 	var req db.User
 	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
-		fmt.Println("Error in unmarshalling the request body: ", err)
+		logger.GetLog().Error("ERROR : ", "Error in unmarshalling the request body.")
 		return events.APIGatewayV2HTTPResponse{
 			// StatusCode: http.StatusBadRequest,
 			// Body:       err.Error(),
 		}, err
 	}
 
-	fmt.Println("Request Body: --->", req)
 	var IsValidEmail = regexp.MustCompile(`^[a-zA-Z0-9._-]+@[a-zA-Z.-]+\.[a-zA-Z]{2,4}$`).MatchString
 	if !IsValidEmail(req.Email) {
-		fmt.Println("Invalid Email. --->", req.Email)
+		logger.GetLog().Error("ERROR : ", "Invalid Email Format.")
 		return events.APIGatewayV2HTTPResponse{
 			// StatusCode: http.StatusBadRequest,
 			// Body:       "Invalid Email.",
@@ -43,7 +44,7 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 
 	ok, err := db.CheckIfUserWithThisEmailExists(req.Email)
 	if err != nil {
-		fmt.Println("Error in finding the user with email: --->", err)
+		logger.GetLog().Error("ERROR : ", "Error in finding the user with email.")
 		return events.APIGatewayV2HTTPResponse{
 			// StatusCode: http.StatusBadRequest,
 			// Body:       err.Error(),
@@ -51,7 +52,7 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 	}
 
 	if ok {
-		fmt.Println("User with this email already exists.")
+		logger.GetLog().Error("ERROR : ", "User with this email already exists.")
 		return events.APIGatewayV2HTTPResponse{
 			// StatusCode: http.StatusBadRequest,
 			// Body:       "User with this email already exists.",
@@ -60,7 +61,7 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		fmt.Println("Failed to hash password.", err)
+		logger.GetLog().Error("ERROR : ", "Failed to hash password.")
 		return events.APIGatewayV2HTTPResponse{
 			// StatusCode: http.StatusBadRequest,
 			// Body:       "Failed to hash password.",
@@ -71,9 +72,10 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 	tokenData := crypto.UserTokenData{
 		ID: id,
 	}
+
 	token, err := crypto.GenerateAuthToken(tokenData)
 	if err != nil {
-		fmt.Println("Error in generating the token: --->", err)
+		logger.GetLog().Error("ERROR : ", "Error in generating the token.")
 		return events.APIGatewayV2HTTPResponse{
 			// StatusCode: http.StatusBadRequest,
 			// Body:       err.Error(),
@@ -90,7 +92,7 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 
 	err = db.InsertUser(user)
 	if err != nil {
-		fmt.Println("Error in inserting the user: --->", err)
+		logger.GetLog().Error("ERROR : ", "Error in inserting the user.")
 		return events.APIGatewayV2HTTPResponse{
 			// StatusCode: http.StatusBadRequest,
 			// Body:       err.Error(),
@@ -104,14 +106,14 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 
 	responseBody, err := json.Marshal(data)
 	if err != nil {
-		fmt.Println("Error in marshalling the response body: --->", err)
+		logger.GetLog().Error("ERROR : ", "Error in marshalling the response body.")
 		return events.APIGatewayV2HTTPResponse{
 			// StatusCode: http.StatusInternalServerError,
 			// Body:       "Internal server error ----->",
 		}, errors.New("Error in marshalling the response body.")
 	}
 
-	fmt.Println("User signed up successfully. --->", string(responseBody))
+	logger.GetLog().Info("INFO : ", "User Signed Up Successfully.")
 	return events.APIGatewayV2HTTPResponse{
 			StatusCode: http.StatusCreated,
 			Body:       string(responseBody)},
