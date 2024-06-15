@@ -1,0 +1,8 @@
+export const ADD_TODO = 'ADD_TODO'
+export const EDIT_TODO = 'EDIT_TODO'
+export const DELETE_TODO = 'DELETE_TODO'
+export const SET_TODOS = 'SET_TODOS'
+export const SET_EDIT_TODO = 'SET_EDIT_TODO'
+export const TASK_COMPLETED = 'TASK_COMPLETD'
+export const SET_LOADING = 'SET_LOADING'
+export const UNSET_LOADING = 'UNSET_LOADING'
